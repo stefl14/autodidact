@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "autodidact"
+version = "0.1.0"
+description = ""
+authors = ["stefl14 <stefl141193@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "3.9.0"
+layoutparser = {extras = ["ocr"], version = "^0.3.4"}
+jupyterlab = "^3.4.3"
+PyPaperBot = "^1.2.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
