@@ -1,12 +1,34 @@
-This project aims to create a domain specific search engine for areas
-I'm interested in (neuroscience and ML to start with).
+# Autodidact
 
-In recent years, the growth of open source Large Language Models has made it feasible to building
-accurate semantic search engines without huge resources. Machine learning approaches
-have also simplified the process of parsing unstructured text (e.g. from PDFs).
+## Introduction
+This project aims to create a domain specific search engine for areas I'm interested in (neuroscience and ML, to start with). 
+It's a meta-autodidactical project: I'm doing it to learn, but the project itself aims to facilitate faster learning!
 
-Combining these two advances, I'm creating a domain specific search engine for neuroscience.
+## Motivation
 
-The reason for this is twofold:
+Traditional search is great for getting high level answers to queries. With knowledge graph improvements, for example, we get a decent answers to most high-level questions using
+traditional search. But search based knowledge graphs typically rely on Wikipedia, limiting the breadth and depth of results. Information locked away in the constant stream of
+unstructured data found in academic pdfs, for example, isn't indexed. In many cases, this means research relies on "Googling" and looking for relevant titles, or relying on hints
+from useful Tweeters. Wouldn't it be nice if there were a way to efficiently find needle's in haystacks of unstructured pdfs? Luckily, two
+recent advances make this a tractable problem, even for individual developers like myself.
 
-    1. Traditional search is great for high level answers to a query. But if you're a domain expert looking for specific and up to date information about advances in your field, "Googling" it might not be the best option. For one thing, most answers you get from Google will be based on a knowledge graph constructed using wikipedia, which naturally limits the depth and breadth of searchable information. Information is often locked away in unstructured PDFs.
+## Advance 1: Unsupervised domain adaptation
+
+The growth of open source Large Language Models has made it feasible to build
+semantic search without needing huge resources. In the simplest case, we can index documents using something like [MS-MARCO](https://huggingface.co/sentence-transformers/msmarco-bert-base-dot-v5), thus leveraging
+tons of information about the structure of search without needing our own search data and without expensive model training. But this has issues:
+ - queries by Bing users are generally not specific to the domain we're interested in, which is to say that the training set isn't representative.
+ - The model knows nothing about what happened after it was trained (2018 in this case), so it could get confused about new information (e.g. covid-19).
+
+Ideally, we'd be able to adapt these models to the domain we're interested in, hopefully in an unsupervised manner that leverages the domain specific data we have access to needing
+expensive labelling. Luckily, [unsupervised domain adaptation](https://www.youtube.com/watch?v=qzQPbIcQu9Q&ab_channel=OpenSourceConnections) is a rapidly advancing field. These
+advances are part of the inspiration for this project.
+
+## Advance 2: Parsing unstructured text data using ML.
+    .
+ML advances has also simplified the process of parsing unstructured text [from pdfs](https://github.com/Layout-Parser/layout-parser). As luck would have it, this is especially
+true for academia as there a model zoo's of parsers for academic papers. But even without this, we can fine tune the models for our needs without much fuss.
+
+## Combining advances
+
+Combining advances 1. and 2. I hope to build a search facilitator that helps me out. After that, we'll see where it goes. At the moment, this repo is mainly for my own learning.
