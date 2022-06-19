@@ -20,14 +20,14 @@ tons of information about the structure of search without needing our own search
  - queries by Bing users are generally not specific to the domain we're interested in, which is to say that the training set isn't representative.
  - The model knows nothing about what happened after it was trained (2018 in this case), so it could get confused about new information (e.g. covid-19).
 
-Ideally, we'd be able to adapt these models to the domain we're interested in, hopefully in an unsupervised manner that leverages the domain specific data we have access to needing
+Ideally, we'd be able to adapt these models to the domain we're interested in, hopefully in an unsupervised manner that leverages the domain specific data we have access to without needing
 expensive labelling. Luckily, [unsupervised domain adaptation](https://www.youtube.com/watch?v=qzQPbIcQu9Q&ab_channel=OpenSourceConnections) is a rapidly advancing field. These
 advances are part of the inspiration for this project.
 
 ## Advance 2: Parsing unstructured text data using ML.
 
 ML advances has also simplified the process of parsing unstructured text [from pdfs](https://github.com/Layout-Parser/layout-parser). As luck would have it, this is especially
-true for academia as there a model zoo's of parsers for academic papers. But even without this, we can fine tune the models for our needs without much fuss.
+true for academia as there are model zoo's of parsers for academic papers. But even without this, we can fine tune the models for our needs without much fuss.
 
 ## Combining advances
 
