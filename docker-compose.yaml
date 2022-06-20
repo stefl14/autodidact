@@ -3,7 +3,7 @@ version: "3.7"
 # single node elasticsearch
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.2.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.1
     environment:
         - discovery.type=single-node
         - xpack.security.enabled=false
@@ -21,13 +21,26 @@ services:
 
   kibana:
       container_name: kibana
-      image: docker.elastic.co/kibana/kibana:8.2.3
+      image: docker.elastic.co/kibana/kibana:7.6.1
       environment:
         - ELASTICSEARCH_HOST=http://elasticsearch:9200
       ports:
         - 5601:5601
       depends_on:
         - elasticsearch
+
+  postgres:
+      image: postgres:9.6
+      container_name: postgres
+      environment:
+        - POSTGRES_USER=admin
+        - POSTGRES_PASSWORD=admin
+      volumes:
+        - ./downloads/result.csv:/var/lib/postgresql/data
+#        - ./downloads/result.csv:/tmp/result.csv
+      ports:
+        - 5432:5432
+
 
 volumes:
     elasticsearch-data-volume:
