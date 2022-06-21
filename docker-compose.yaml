@@ -38,12 +38,6 @@ services:
         interval: 10s
         retries: 10
       container_name: postgres
-      environment:
-        - POSTGRES_USER=admin
-        - POSTGRES_PASSWORD=admin
-      volumes:
-        - ./downloads/result.csv:/var/lib/postgresql/data
-#        - ./downloads/result.csv:/tmp/result.csv
       ports:
         - 5432:5432
 # TODO: Add init db.
