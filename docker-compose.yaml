@@ -46,7 +46,9 @@ services:
 #        - ./downloads/result.csv:/tmp/result.csv
       ports:
         - 5432:5432
-
+# TODO: Add init db.
+      env_file:
+        - .env
 
 volumes:
     elasticsearch-data-volume:
