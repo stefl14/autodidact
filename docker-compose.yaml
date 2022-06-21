@@ -30,7 +30,13 @@ services:
         - elasticsearch
 
   postgres:
-      image: postgres:9.6
+      image: postgres:latest
+      restart: always
+      healthcheck:
+        test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "username" ]
+        timeout: 45s
+        interval: 10s
+        retries: 10
       container_name: postgres
       environment:
         - POSTGRES_USER=admin
