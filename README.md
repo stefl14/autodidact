@@ -37,7 +37,7 @@ Combining advances 1. and 2. I hope to build a search facilitator that helps me 
 
 For local development, run the docker-compose stack.
 
-```docker-compose up -d'''
+```docker-compose up -d```
 
 Access postgres locally via the command-line or use a helper tool such as pgadmin or beekper (linux users):
 
