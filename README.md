@@ -32,3 +32,13 @@ true for academia as there are model zoo's of parsers for academic papers. But e
 ## Combining advances
 
 Combining advances 1. and 2. I hope to build a search facilitator that helps me out. After that, we'll see where it goes. At the moment, this repo is mainly for my own learning.
+
+## Get up and running.
+
+For local development, run the docker-compose stack.
+
+```docker-compose up -d```
+
+Access postgres locally via the command-line or use a helper tool such as pgadmin or beekper (linux users):
+
+```psql -h localhost -U username -p 5432 -d default_database```
