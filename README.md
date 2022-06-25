@@ -47,6 +47,10 @@ poe detectron-2
 
 ## Get up and running.
 
+To download some example papers, run the following script. It will download a bunch of papers; you can edit the papers downloaded at your convenience.
+
+```scripts/fep_pypaperbot_example.sh```
+
 For local development, run the docker-compose stack.
 
 ```docker-compose up -d```
