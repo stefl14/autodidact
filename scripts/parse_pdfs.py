@@ -109,6 +109,8 @@ def run_cli(
     input_dir = Path(input_dir)
     for file in input_dir.iterdir():
         file_name = file.name
+        if not file_name.endswith(".pdf"):
+            continue
         pdf_tokens, pdf_images = lp.load_pdf(file, load_images=True)
         for ix, image in enumerate(pdf_images):
             image_array = np.array(image)
