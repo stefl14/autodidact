@@ -1,7 +1,7 @@
 # Autodidact
 
 ## Warning
-At the moment, this is largely "research code" so some conventions are ignored for speed. e.g. little testing, no-CI-CD and good old fashioned requirements.txt instead of poetry (current issues with poetry for particular cuda runtimes (the one running on my laptop). Will formalise more as stuff goes along.
+At the moment, this is "research code" for my own use/experimentation so some conventions are ignored for speed (there's little testing, no-CI-CD and I use good old fashioned requirements.txt instead of poetry because the are some issues with poetry for my particular cuda runtime. I will formalise as I go alone, depending on where the project goes.
 
 ## Introduction
 This project aims to create a domain specific search engine for areas I'm interested in (neuroscience and ML, to start with). 
