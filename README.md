@@ -39,9 +39,10 @@ Combining advances 1. and 2. I hope to build a search facilitator that helps me 
 
 This library depends on detectron2 models for document AI. Getting PyTorch working with a Poetry environment can be slightly painful depending on your CUDA runtime (see [here](https://github.com/python-poetry/poetry/issues/2543)). The best (temporary) solution I found for the CUDA version on my laptop (11.3) was to use a nice task runner for poetry [poethepoet](https://github.com/nat-n/poethepoet). You can install the cli for poe and then run the following commands in the root of the repo if you have the same GPU setup as me, but if not it's a simple matter of getting the right wheel for your card and changing a few commands.
 
-```poetry install
-   poe force-cuda11
-   poe detectron-2
+```
+poetry install
+poe force-cuda11
+poe detectron-2
 ```
 
 ## Get up and running.
