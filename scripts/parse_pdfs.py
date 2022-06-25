@@ -8,16 +8,6 @@ from layoutparser.elements.layout_elements import TextBlock
 from pathlib import Path
 
 
-class CustomTextBlock(TextBlock):
-    """
-    Custom TextBlock class to add page_num attribute.
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.page_num = None
-
-
 def perform_ocr(
     ocr_agent: Union[lp.TesseractAgent, lp.GCVAgent],
     image: np.array,
