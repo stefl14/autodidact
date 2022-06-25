@@ -40,9 +40,12 @@ services:
       container_name: postgres
       ports:
         - 5432:5432
-# TODO: Add init db.
+      # Import the data from local csv file
+      volumes:
+        - ./pg_data:/var/lib/pg_data
+        - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       env_file:
-        - .env
+      - .env
 
 volumes:
     elasticsearch-data-volume:
