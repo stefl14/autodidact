@@ -1,8 +1,5 @@
 # Autodidact
 
-## Warning
-At the moment, this is "research code" for my own use/experimentation so some conventions are ignored for speed (there's little testing, no-CI-CD and I use good old fashioned requirements.txt instead of poetry because the are some issues with poetry for my particular cuda runtime. I will formalise as I go alone, depending on where the project goes.
-
 ## Introduction
 This project aims to create a domain specific search engine for areas I'm interested in (neuroscience and ML, to start with). 
 It's a meta-autodidactical project: I'm doing it to learn, but the project itself aims to facilitate faster learning!
@@ -36,7 +33,23 @@ true for academia as there are model zoo's of parsers for academic papers. But e
 
 Combining advances 1. and 2. I hope to build a search facilitator that helps me out. After that, we'll see where it goes. At the moment, this repo is mainly for my own learning.
 
+## Installation
+
+## Deep Learning dependencies (Detectron).
+
+This library depends on detectron2 models for document AI. Getting PyTorch working with a Poetry environment can be slightly painful depending on your CUDA runtime (see [here](https://github.com/python-poetry/poetry/issues/2543)). The best (temporary) solution I found for the CUDA version on my laptop (11.3) was to use a nice task runner for poetry [poethepoet](https://github.com/nat-n/poethepoet). You can install the cli for poe and then run the following commands in the root of the repo if you have the same GPU setup as me, but if not it's a simple matter of getting the right wheel for your card and changing a few commands.
+
+```
+poetry install
+poe force-cuda11
+poe detectron-2
+```
+
 ## Get up and running.
+
+To download some example papers, run the following script. It will download a bunch of papers; you can edit the papers downloaded at your convenience.
+
+```scripts/fep_pypaperbot_example.sh```
 
 For local development, run the docker-compose stack.
 
