@@ -56,31 +56,8 @@ def get_text_blocks(image: np.array, model) -> lp.Layout:
     image_array = np.array(image)
     layout = model.detect(image_array)  # perform computer vision
     # perform ocr on extracted blocks.
-    text_blocks = lp.Layout([b for b in layout if b.type == "Text blocks on page."])
+    text_blocks = lp.Layout([b for b in layout if b.type == "Text"])
     return text_blocks
-
-
-def postprocess_ocr_results(
-    text_blocks: lp.Layout, block_pages: List[List[int]]
-) -> dict:
-    """Postprocess the OCR results.
-
-    Args:
-        text_blocks: lp.Layout with OCR results + metadata of blocks containing text
-        block_pages: Page nubmers associated with the set of blocks for each page (image).
-
-    Returns:
-        A dictionary of text blocks and metadata.
-    """
-    # flatten block_pages to a single list of blocks.
-    blocks = [block for page in block_pages for block in page]
-
-    # save extracted layout as json
-    text_block_dict = text_blocks.to_dict()
-    for ix, dic in enumerate(text_block_dict["blocks"]):
-        dic["page_num"] = blocks[ix]
-
-    return text_block_dict
 
 
 @click.command()
@@ -148,30 +125,34 @@ def run_cli(
     loguru.logger.info(f"Iterating through files.")
     input_dir = Path(input_dir)
     for file in tqdm(input_dir.iterdir(), desc="Files"):
-        file_name = file.name
-        if not file_name.endswith(".pdf"):
+        if file.suffix != ".pdf":
             continue
         _, pdf_images = lp.load_pdf(file, load_images=True)
-        block_pages = (
-            []
-        )  # list of pages of blocks (not captured by layoutparser, will put into a proper data
-        # structure later).
+        pages=[]
         for ix, image in tqdm(
-            enumerate(pdf_images), total=len(pdf_images), desc=file_name
+            enumerate(pdf_images), total=len(pdf_images), desc=file.name
         ):
             image_array = np.array(image)
             text_blocks = get_text_blocks(image_array, model)
-            block_pages.append([ix + 1] * len(text_blocks))  # For post-processing.
             for block in text_blocks:
                 perform_ocr(
                     ocr_agent, image_array, block
                 )  # modify text blocks in-place
 
-        # Post-processing.
-        text_block_dict = postprocess_ocr_results(text_blocks, block_pages)
-        file_name_without_ext = file_name.split(".")[0]
+            # save extracted layout as json
+            text_block_dict = text_blocks.to_dict()
+            for dic in text_block_dict["blocks"]:
+                dic["page_num"] = ix + 1
+
+            pages.append(text_block_dict)
+
+
+        out_dict = {"pages": pages}
+        # # Post-processing.
+        # text_block_dict = postprocess_ocr_results(text_blocks, block_pages)
+        file_name_without_ext = file.name.split(".")[0]
         with open(output_dir / f"{file_name_without_ext}.json", "w") as f:
-            json.dump(text_block_dict, f)
+            json.dump(out_dict, f)
         loguru.logger.info(f"Saved {file_name_without_ext}.json to {output_dir}.")
 
 
