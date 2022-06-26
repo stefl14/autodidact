@@ -1,25 +1,25 @@
 import json
-from typing import Union
+from typing import Union, List
 
 import click
 import layoutparser as lp
 import numpy as np
+import loguru
 from layoutparser.elements.layout_elements import TextBlock
 from pathlib import Path
+from tqdm import tqdm
 
 
 def perform_ocr(
     ocr_agent: Union[lp.TesseractAgent, lp.GCVAgent],
     image: np.array,
     block: TextBlock,
-    page_num: int,
     left_pad: int = 15,
     right_pad: int = 5,
     top_pad: int = 5,
     bottom_pad: int = 5,
 ) -> None:
-    """
-    Perform OCR on a block of text.
+    """Perform OCR on a block of text.
 
     Args:
         ocr_agent: The OCR agent to use.
@@ -30,6 +30,7 @@ def perform_ocr(
         top_pad: The number of pixels to pad the top of the block.
         bottom_pad: The number of pixels to pad the bottom of the block.
     """
+
     # Pad to improve OCR accuracy as it's fairly tight.
     segment_image = block.pad(
         left=left_pad, right=right_pad, top=top_pad, bottom=bottom_pad
@@ -40,10 +41,46 @@ def perform_ocr(
 
     # Save OCR result
     block.set(text=text, inplace=True)
-    # TODO: Clean this up with custom data class.
-    block.__setattr__(
-        "page_num", page_num
-    )  # Needed for reading order detection downstream. Bit messy.
+
+
+def get_text_blocks(image: np.array, model) -> lp.Layout:
+    """Get the text blocks from an image using layoutparser Document-AI.
+
+    Args:
+        image: np.array of the image to get the text blocks from.
+        model: The computer vision model to use for text detection.
+
+    Returns:
+        A layoutparser Layout object of text blocks.
+    """
+    image_array = np.array(image)
+    layout = model.detect(image_array)  # perform computer vision
+    # perform ocr on extracted blocks.
+    text_blocks = lp.Layout([b for b in layout if b.type == "Text blocks on page."])
+    return text_blocks
+
+
+def postprocess_ocr_results(
+    text_blocks: lp.Layout, block_pages: List[List[int]]
+) -> dict:
+    """Postprocess the OCR results.
+
+    Args:
+        text_blocks: lp.Layout with OCR results + metadata of blocks containing text
+        block_pages: Page nubmers associated with the set of blocks for each page (image).
+
+    Returns:
+        A dictionary of text blocks and metadata.
+    """
+    # flatten block_pages to a single list of blocks.
+    blocks = [block for page in block_pages for block in page]
+
+    # save extracted layout as json
+    text_block_dict = text_blocks.to_dict()
+    for ix, dic in enumerate(text_block_dict["blocks"]):
+        dic["page_num"] = blocks[ix]
+
+    return text_block_dict
 
 
 @click.command()
@@ -91,6 +128,8 @@ def run_cli(
         model: The document AI model to use.
         detectron_threshold: The threshold to use for Detectron2.
     """
+    loguru.logger.info(f"Using {ocr_agent} OCR agent.")
+    loguru.logger.info(f"Using {model} model.")
     input_dir = Path(input_dir)
     output_dir = Path(output_dir)
     model = lp.Detectron2LayoutModel(
@@ -106,28 +145,34 @@ def run_cli(
         ocr_agent = lp.TesseractAgent(languages="eng")
     elif ocr_agent == "gcv":
         ocr_agent = lp.GCVAgent(languages="eng")
+    loguru.logger.info(f"Iterating through files.")
     input_dir = Path(input_dir)
-    for file in input_dir.iterdir():
+    for file in tqdm(input_dir.iterdir(), desc="Files"):
         file_name = file.name
         if not file_name.endswith(".pdf"):
             continue
-        pdf_tokens, pdf_images = lp.load_pdf(file, load_images=True)
-        for ix, image in enumerate(pdf_images):
+        _, pdf_images = lp.load_pdf(file, load_images=True)
+        block_pages = (
+            []
+        )  # list of pages of blocks (not captured by layoutparser, will put into a proper data
+        # structure later).
+        for ix, image in tqdm(
+            enumerate(pdf_images), total=len(pdf_images), desc=file_name
+        ):
             image_array = np.array(image)
-            layout = model.detect(image_array)  # perform computer vision
-            # perform ocr on extracted blocks.
-            text_blocks = lp.Layout([b for b in layout if b.type == "Text"])
-            # convert to CustomTextBlock to add page_num attribute.
+            text_blocks = get_text_blocks(image_array, model)
+            block_pages.append([ix + 1] * len(text_blocks))  # For post-processing.
             for block in text_blocks:
                 perform_ocr(
-                    ocr_agent, image_array, block, page_num=ix + 1
+                    ocr_agent, image_array, block
                 )  # modify text blocks in-place
 
-        # save extracted layout as json
-        text_block_dict = text_blocks.to_dict()
+        # Post-processing.
+        text_block_dict = postprocess_ocr_results(text_blocks, block_pages)
         file_name_without_ext = file_name.split(".")[0]
         with open(output_dir / f"{file_name_without_ext}.json", "w") as f:
             json.dump(text_block_dict, f)
+        loguru.logger.info(f"Saved {file_name_without_ext}.json to {output_dir}.")
 
 
 if __name__ == "__main__":
