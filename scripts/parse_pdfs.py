@@ -60,6 +60,20 @@ def get_text_blocks(image: np.array, model) -> lp.Layout:
     return text_blocks
 
 
+def disambiguate_overlapping_blocks():
+    pass
+
+def detect_num_cols(text_blocks: lp.Layout) -> int:
+    """Detect the number of text columns on a pdf page for processing reading order downstream.
+    """
+    pass
+
+def detect_reading_order(text_blocks: lp.Layout) -> lp.Layout:
+    """Detect the reading order of text blocks on a pdf page.
+    """
+    pass
+
+
 @click.command()
 @click.option(
     "-i",
