@@ -1,10 +1,12 @@
 import json
+from collections import defaultdict
 from typing import Union, List
 
 import click
 import layoutparser as lp
 import numpy as np
 import loguru
+import pandas as pd
 from layoutparser.elements.layout_elements import TextBlock
 from pathlib import Path
 from tqdm import tqdm
@@ -63,15 +65,78 @@ def get_text_blocks(image: np.array, model) -> lp.Layout:
 def disambiguate_overlapping_blocks():
     pass
 
-def detect_num_cols(text_blocks: lp.Layout) -> int:
-    """Detect the number of text columns on a pdf page for processing reading order downstream.
-    """
-    pass
 
-def detect_reading_order(text_blocks: lp.Layout) -> lp.Layout:
-    """Detect the reading order of text blocks on a pdf page.
+def calc_frac_overlap(block_1, block_2):
+    """Calculate the fraction of overlap between two blocks.
+
+    Args:
+        block_1: The first text block.
+        block_2: The second text block.
+
+    Returns:
+        The percentage of overlap between the two blocks.
     """
-    pass
+    union_width = block_1.union(block_2).width
+    intersection_width = block_1.intersect(block_2).width
+    return intersection_width / union_width
+
+
+def calc_block_groups(blocks: lp.Layout, threshold: float = 0.95):
+    """Group text blocks into columns depending on an x-overlap threshold.
+
+    Assumption is that blocks with a given x-overlap are in the same column. This
+    is a heuristic encoding of a reading order prior.
+
+    Args:
+        text_blocks: The text blocks to group.
+        threshold: The threshold for the percentage of overlap in the x-direction.
+
+    Returns:
+        An array of text block groups.
+    """
+    dd = defaultdict(
+        list
+    )  # keys are the text block index; values are the other indices that are inferred to be in the same reading column.
+    # Calculate the percentage overlap in the x-direction of every text block with every other text block.
+    for ix, i in enumerate(blocks):
+        for j in blocks:
+            dd[ix].append(calc_frac_overlap(i, j))
+    df_overlap = pd.DataFrame(dd)
+    df_overlap = (
+        df_overlap > threshold
+    )  # same x-column if intersection over union > threshold
+    # For each block, get a list of shared blocks.
+    shared_blocks = df_overlap.apply(
+        lambda row: str(row[row == True].index.tolist()), axis=1
+    )
+    # put into numeric groups for cleanness.
+    column_groups = pd.factorize(shared_blocks)[0]
+    return column_groups
+
+
+def infer_reading_order(text_blocks: lp.Layout, column_groups) -> List[int]:
+    """Infer the reading order of the text blocks.
+
+    Encodes reading order prior that intended reading order is to read
+    all rows of a column first, then move to the next column.
+
+    Args:
+        text_blocks: The text blocks to infer the reading order of.
+        column_groups: The column groups of the text blocks.
+
+    Returns:
+        The text blocks with the inferred reading order..
+    """
+    df_text_blocks = text_blocks.to_dataframe()
+    df_text_blocks["group"] = column_groups
+    df_text_blocks["x_1_min"] = df_text_blocks.groupby("group")["x_1"].transform(min)
+    # split df into groups, sort values by y_1, then concatenate groups according to x_1.
+    df_natural_reading_order = df_text_blocks.sort_values(
+        ["x_1_min", "y_1"], ascending=[True, True]
+    )
+    reading_order = df_natural_reading_order.index.tolist()
+    text_blocks = [text_blocks[i] for i in reading_order]
+    return text_blocks
 
 
 @click.command()
@@ -142,7 +207,7 @@ def run_cli(
         if file.suffix != ".pdf":
             continue
         _, pdf_images = lp.load_pdf(file, load_images=True)
-        pages=[]
+        pages = []
         for ix, image in tqdm(
             enumerate(pdf_images), total=len(pdf_images), desc=file.name
         ):
@@ -159,7 +224,6 @@ def run_cli(
                 dic["page_num"] = ix + 1
 
             pages.append(text_block_dict)
-
 
         out_dict = {"pages": pages}
         # # Post-processing.
