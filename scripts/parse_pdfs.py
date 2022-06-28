@@ -88,7 +88,7 @@ def calc_block_groups(blocks: lp.Layout, threshold: float = 0.95):
     is a heuristic encoding of a reading order prior.
 
     Args:
-        text_blocks: The text blocks to group.
+        blocks: The text blocks to group.
         threshold: The threshold for the percentage of overlap in the x-direction.
 
     Returns:
@@ -213,6 +213,9 @@ def run_cli(
         ):
             image_array = np.array(image)
             text_blocks = get_text_blocks(image_array, model)
+            # Reorganise text blocks to reflect inferred reading order.
+            block_groups = calc_block_groups(text_blocks)
+            text_blocks = infer_reading_order(text_blocks, block_groups)
             for block in text_blocks:
                 perform_ocr(
                     ocr_agent, image_array, block
