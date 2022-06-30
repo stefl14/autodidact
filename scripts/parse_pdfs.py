@@ -41,6 +41,7 @@ def perform_ocr(
     # Perform OCR
     text = ocr_agent.detect(segment_image, return_only_text=True)
 
+
     # Save OCR result
     block.set(text=text, inplace=True)
 
@@ -63,6 +64,14 @@ def get_text_blocks(image: np.array, model) -> lp.Layout:
 
 
 def disambiguate_overlapping_blocks():
+    pass
+
+
+def ensure_json_compat():
+    pass
+
+
+def parse_lists():
     pass
 
 
@@ -213,27 +222,32 @@ def run_cli(
         ):
             image_array = np.array(image)
             text_blocks = get_text_blocks(image_array, model)
+            # skip if no text blocks found.
+            if len(text_blocks) == 0:
+                continue
             # Reorganise text blocks to reflect inferred reading order.
             block_groups = calc_block_groups(text_blocks)
-            text_blocks = infer_reading_order(text_blocks, block_groups)
-            for block in text_blocks:
+            text_block_list = infer_reading_order(text_blocks, block_groups)
+            text_blocks_reordered = lp.Layout(text_block_list)
+            for block in text_blocks_reordered:
                 perform_ocr(
                     ocr_agent, image_array, block
                 )  # modify text blocks in-place
 
             # save extracted layout as json
             text_block_dict = text_blocks.to_dict()
-            for dic in text_block_dict["blocks"]:
-                dic["page_num"] = ix + 1
+            # TODO: We will probably want more complicated JSON structure later, so will modularise this metadata step.
+            # Add page number to text blocks.
+            text_block_dict["page_data"]["page_number"] = ix + 1
 
             pages.append(text_block_dict)
 
         out_dict = {"pages": pages}
-        # # Post-processing.
-        # text_block_dict = postprocess_ocr_results(text_blocks, block_pages)
+        # Post-processing.
         file_name_without_ext = file.name.split(".")[0]
         with open(output_dir / f"{file_name_without_ext}.json", "w") as f:
-            json.dump(out_dict, f)
+            # some strings are single-quoted, so we need to double-quote them.
+            json.dump(out_dict, f, indent=4, ensure_ascii=False)
         loguru.logger.info(f"Saved {file_name_without_ext}.json to {output_dir}.")
 
 
