@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from typing import Union, List
+from typing import Union, List, Iterable
 
 import click
 import layoutparser as lp
@@ -67,11 +67,7 @@ def disambiguate_overlapping_blocks():
     pass
 
 
-def ensure_json_compat():
-    pass
-
-
-def parse_lists():
+def parse_list_blocks():
     pass
 
 
@@ -123,7 +119,7 @@ def calc_block_groups(blocks: lp.Layout, threshold: float = 0.95):
     return column_groups
 
 
-def infer_reading_order(text_blocks: lp.Layout, column_groups) -> List[int]:
+def infer_reading_order(text_blocks: lp.Layout, column_groups: Iterable) -> List[int]:
     """Infer the reading order of the text blocks.
 
     Encodes reading order prior that intended reading order is to read
