@@ -15,4 +15,4 @@ CREATE TABLE public."papers"
   authors text
 );
 
-\copy public."papers" FROM '/var/lib/pg_data/results.csv' DELIMITER ',' CSV HEADER;
+\copy public."papers" FROM '/var/lib/pg_data/result.csv' DELIMITER ',' CSV HEADER;
