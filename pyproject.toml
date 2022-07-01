@@ -17,6 +17,8 @@ spacy = "^3.3.1"
 en-core-web-sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.3.0/en_core_web_sm-3.3.0.tar.gz"}
 loguru = "^0.6.0"
 eland = "^8.2.0"
+cloudpathlib = "^0.9.0"
+sentence-transformers = "^2.2.2"
 
 [tool.poe.tasks]
 ## PyTorch with CUDA 11.3. If PyTorch is imported first, importing Tensorflow will detect CUDA + cuDNN bundled with PyTorch
